@@ -54,7 +54,7 @@ print("List of files: %s" % str(file_list))
 if len(file_list) < 0:
     print("No file modified in this PR???")
     os.sys.exit(1)
-elif len(file_list) > 0:
+elif len(file_list) > 1:
     print("More than one file modified in this PR")
     os.sys.exit(1)
 else:
