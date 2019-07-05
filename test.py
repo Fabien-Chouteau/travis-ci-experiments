@@ -18,15 +18,14 @@ for elt in env_list:
     else:
         print("%s not defined" % elt)
 
-def check_username(username, file):
-    with open(file, 'r', encoding='utf-8') as fp:
-        content = toml.load(fp)
-        if 'general' not in content:
-            return False
-        elif 'github_usernames' not in content.get("general"):
-            return False
-        else:
-            return username in content.get("general").get('github_usernames')
+def check_username(username, toml_data):
+    content = toml.loads(toml_data)
+    if 'general' not in content:
+        return False
+    elif 'github_usernames' not in content.get("general"):
+        return False
+    else:
+        return username in content.get("general").get('github_usernames')
 
 def username():
     if 'TRAVIS_PULL_REQUEST_SLUG' in os.environ:
@@ -58,7 +57,19 @@ elif len(file_list) > 1:
     print("More than one file modified in this PR")
     os.sys.exit(1)
 else:
-    if check_username(username(), file_list[0]):
+    filename = file_list[0]
+    first_commit = commit_id_or_range().split('...', 1)[0]
+
+    try:
+        output = subprocess.check_output(['git', 'show', "%s~:%s" % (first_commit, filename)])
+        toml_data = output.decode(sys.stdout.encoding)
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+        print("This is a new file")
+        with open(filename, 'r', encoding='utf-8') as fp:
+            toml_data = fp.read()
+
+    if check_username(username(), toml_data):
         print("PR author owns the file")
         os.sys.exit(0)
     else:
