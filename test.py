@@ -35,26 +35,33 @@ def username():
     else:
         return "_NO_USERNAME_"
 
-
-if 'TRAVIS_COMMIT_RANGE' in os.environ:
-    output = subprocess.check_output(['git', 'show', '--pretty=', '--name-only', os.environ['TRAVIS_COMMIT_RANGE']])
-    file_list = output.decode(sys.stdout.encoding).split("\n")
-    file_list = [i for i in file_list if i]
-    file_list.sort()
-    file_list = list(set(file_list))
-    print("List of files: %s" % str(file_list))
-
-    if len(file_list) < 0:
-        print("No file modified in this PR???")
-        os.sys.exit(1)
-    elif len(file_list) > 0:
-        print("More than one file modified in this PR")
-        os.sys.exit(1)
+def commit_id_or_range():
+    if 'TRAVIS_COMMIT_RANGE' in os.environ \
+           and len(os.environ['TRAVIS_COMMIT_RANGE']) > 0:
+        return os.environ['TRAVIS_COMMIT_RANGE']
+    elif 'TRAVIS_COMMIT' in os.environ:
+        return os.environ['TRAVIS_COMMIT']
     else:
-        if check_username(username(), file_list[0]):
-            print("PR author owns the file")
-            os.sys.exit(0)
-        else:
-            print("PR author doesn't own the file")
-            os.sys.exit(1)
+        return "_NO_COMMIT_ID_"
+
+output = subprocess.check_output(['git', 'show', '--pretty=', '--name-only', commit_id_or_range()])
+file_list = output.decode(sys.stdout.encoding).split("\n")
+file_list = [i for i in file_list if i]
+file_list.sort()
+file_list = list(set(file_list))
+print("List of files: %s" % str(file_list))
+
+if len(file_list) < 0:
+    print("No file modified in this PR???")
+    os.sys.exit(1)
+elif len(file_list) > 0:
+    print("More than one file modified in this PR")
+    os.sys.exit(1)
+else:
+    if check_username(username(), file_list[0]):
+        print("PR author owns the file")
+        os.sys.exit(0)
+    else:
+        print("PR author doesn't own the file")
+        os.sys.exit(1)
 
