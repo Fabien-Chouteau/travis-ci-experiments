@@ -6,6 +6,7 @@ list = ['TRAVIS_PULL_REQUEST_SLUG',
         'TRAVIS_REPO_SLUG',
         'TRAVIS_BRANCH',
         'TRAVIS_COMMIT',
+        'TRAVIS_COMMIT_RANGE',
         'TRAVIS_EVENT_TYPE']
 
 for elt in list:
@@ -13,3 +14,8 @@ for elt in list:
         print("%s -> '%s'" % (elt, os.environ[elt]))
     else:
         print("%s not defined" % elt)
+
+
+if 'TRAVIS_PULL_REQUEST_SLUG' in os.environ:
+    username, _ = os.environ['TRAVIS_PULL_REQUEST_SLUG'].split('/', 1)
+    print("PR username: %s" % str(username))
